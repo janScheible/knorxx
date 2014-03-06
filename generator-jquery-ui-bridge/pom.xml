@@ -1,0 +1,52 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+  
+    <groupId>knorxx.framework.generator</groupId>
+    <artifactId>jquery-ui-bridge</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  
+    <name>knorxx.framework.generator:jquery-ui-bridge</name>
+    <packaging>jar</packaging>
+  
+    <parent>
+        <groupId>knorxx</groupId>
+        <artifactId>framework</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../framework</relativePath>
+    </parent>
+    
+    <properties>
+        <project.inceptionYear>2014</project.inceptionYear>
+    </properties>
+    
+    <build>
+        <plugins>
+        </plugins>
+    </build>
+    
+    <dependencies>
+        <dependency>
+            <groupId>knorxx.framework</groupId>
+            <artifactId>generator</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.st-js.bridge</groupId>
+            <artifactId>jqueryui</artifactId>
+            <version>1.10.3.bv0</version>
+        </dependency>   
+        
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery-ui</artifactId>
+            <version>1.10.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery-ui-themes</artifactId>
+            <version>1.10.3</version>
+        </dependency>  
+    </dependencies>    
+</project>

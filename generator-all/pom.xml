@@ -1,0 +1,19 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+  
+    <groupId>knorxx.framework</groupId>
+    <artifactId>generator-all</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  
+    <name>knorxx.framework:generator-all</name>
+    <packaging>pom</packaging>  
+    
+    <modules>
+        <module>../generator</module>
+        <module>../generator-javaee-adapter</module>
+        <module>../generator-spring-adapter</module>
+        <module>../generator-jquery-ui-bridge</module>
+        <module>../generator-ext-js-bridge</module>
+    </modules>
+</project>
