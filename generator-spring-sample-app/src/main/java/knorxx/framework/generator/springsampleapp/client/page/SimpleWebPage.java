@@ -22,7 +22,6 @@ public class SimpleWebPage extends AbstractWebPage {
         $(CONTENT_ID).append($("<h2>TODOs</h2>"));
 
         JQueryCore list = $("<ul></ul>");        
-        list.append("<li>SourceMaps???</li>");
         list.append("<li>Support of promises??? (e.g. https://github.com/kriskowal/q)</li>");        
          
         $(CONTENT_ID).append(list);

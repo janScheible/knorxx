@@ -2,11 +2,13 @@ package knorxx.framework.generator.single;
 
 import japa.parser.ast.CompilationUnit;
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
 import knorxx.framework.generator.JavaFileWithSource;
+import knorxx.framework.generator.single.api.ApiChangeException;
 import knorxx.framework.generator.single.api.ApiMethodNameChangeException;
 import knorxx.framework.generator.single.api.ApiMethodParamterChangeException;
 import knorxx.framework.generator.single.api.ApiReflectionException;
@@ -45,14 +47,33 @@ public class StjsSingleFileGenerator extends SingleFileGenerator {
         GenerationContext context = new GenerationContext(javaFileWithExposedSourceFile.getSourceFile(), configuration);
         CompilationUnit cu = parseAndResolve(classLoaderWrapper, javaFileWithExposedSourceFile.getSourceFile(), context);
 
-        JavascriptWriterVisitor generatorVisitor = new JavascriptWriterVisitor(classLoader, false);
+        JavascriptWriterVisitor generatorVisitor = new JavascriptWriterVisitor(classLoader, true);
         generatorVisitor.visit(cu, context);
 
-        StringWriter stringWriter = new StringWriter();
-        stringWriter.write(generatorVisitor.getGeneratedSource());
-        stringWriter.flush();
+        StringWriter javaScriptStringWriter = new StringWriter();
+        javaScriptStringWriter.write(generatorVisitor.getGeneratedSource());
+        javaScriptStringWriter.flush();
+        
+        StringWriter sourceMapStringWriter = new StringWriter();
+        try {
+            generatorVisitor.writeSourceMap(context, sourceMapStringWriter);
+        } catch(IOException ex) {
+            throw new IllegalStateException("An error occured while writing the source map for '" + 
+                    javaFile.getJavaClassName() + "'.", ex);
+        }
+        sourceMapStringWriter.flush();
 
-        return new JavaScriptResult(stringWriter.toString());
+        return new JavaScriptResult(stripSourceMappingUrl(javaScriptStringWriter.toString()), sourceMapStringWriter.toString());
+    }
+    
+    private String stripSourceMappingUrl(String javaScriptSource) {
+        int sourceMappingUrlIndex = javaScriptSource.lastIndexOf("//@ sourceMappingURL=");
+        
+        if(sourceMappingUrlIndex < 0) {
+            throw new ApiChangeException("The source mapping URL is missing in the generated file!");
+        }
+        
+        return javaScriptSource.substring(0, sourceMappingUrlIndex).trim();
     }
 
     @Override

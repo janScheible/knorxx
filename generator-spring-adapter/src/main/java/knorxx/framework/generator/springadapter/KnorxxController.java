@@ -1,10 +1,13 @@
 package knorxx.framework.generator.springadapter;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.CharStreams;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,6 +20,8 @@ import knorxx.framework.generator.GenerationRoots;
 import knorxx.framework.generator.GenerationUnit;
 import knorxx.framework.generator.library.LibraryDetector;
 import knorxx.framework.generator.library.LibraryUrls;
+import knorxx.framework.generator.single.JavaScriptResult;
+import static knorxx.framework.generator.springadapter.CacheRequestType.*;
 import static knorxx.framework.generator.springadapter.KnorxxGeneratorCacheConfig.GENERATOR_CACHE_NAME;
 import knorxx.framework.generator.web.KnorxxApplication;
 import knorxx.framework.generator.web.WebJavaScriptGenerator;
@@ -128,7 +133,8 @@ public abstract class KnorxxController implements ApplicationContextAware {
         }
     }
     
-    @RequestMapping(value = {"/" + FRAMEWORK_URL_PREFIX + "/**/*.js", "/" + FRAMEWORK_URL_PREFIX + "/**/*.css"})
+    @RequestMapping(value = {"/" + FRAMEWORK_URL_PREFIX + "/**/*.js", "/" + FRAMEWORK_URL_PREFIX + "/**/*.js.map",
+        "/" + FRAMEWORK_URL_PREFIX + "/**/*.css", "/" + FRAMEWORK_URL_PREFIX + "/**/*.java"})
     @ResponseBody
     public String responseFromCache(HttpServletRequest request) {
         return getResponseFromCache(request);
@@ -154,8 +160,7 @@ public abstract class KnorxxController implements ApplicationContextAware {
         
         String allowedReloadPackage = applicationRootClass.getPackage().getName();
         
-        generationRoots = generationRoots != null ? generationRoots : generationRootsFunction.apply(request);
-        WebJavaScriptGenerator generator = new WebJavaScriptGenerator(generationRoots,
+        WebJavaScriptGenerator generator = new WebJavaScriptGenerator(getGenerationRoots(request),
                 allowedGenerationPackage, allowedReloadPackage, JSON_RPC_URL.substring(1), libraryDetector);
         GenerationUnit unit = generator.generateAll(Lists.<Class<?>>newArrayList(webPageClass,
                 javaScriptJsonHelper.getClass(), javaScriptErrorHandler.getClass()));
@@ -190,6 +195,11 @@ public abstract class KnorxxController implements ApplicationContextAware {
         
         return new ModelAndView("/presentation.jsp", model);
     }    
+    
+    private GenerationRoots getGenerationRoots(HttpServletRequest request) {
+        generationRoots = generationRoots != null ? generationRoots : generationRootsFunction.apply(request);
+        return generationRoots;
+    }
 
     private LibraryUrls populateCache(GenerationUnit unit, RttiGenerationResult rttiGenerationResult, UrlResolver urlResolver) {
         LibraryUrls cacheUrls = new LibraryUrls();
@@ -217,12 +227,42 @@ public abstract class KnorxxController implements ApplicationContextAware {
     
     private String getResponseFromCache(HttpServletRequest request) {
         String url = getUrl(request);
+        CacheRequestType requestType = JAVA_SCRIPT_OR_CSS;
+
+        if (url.endsWith(".java")) {
+            url = url.substring(0, url.length() - 4) + "js";
+            requestType = JAVA;
+        } else if (url.endsWith(".js.map")) {
+            url = url.substring(0, url.length() - 4);
+            requestType = SOURCE_MAP;
+        }
+
         GenerationResult result = (GenerationResult) cacheManager.getCache(GENERATOR_CACHE_NAME).get(url).get();
 
-        if (url.endsWith(".css")) {
+        Optional<String> sourceMap = Optional.absent();
+        if (result.getSingleResult() instanceof JavaScriptResult) {
+            sourceMap = ((JavaScriptResult) result.getSingleResult()).getSourceMap();
+        }
+        
+        if (requestType == SOURCE_MAP) {
+            return sourceMap.get();
+        } else if (requestType == JAVA) {
+            try {
+                InputStream javaSourceInputStream = result.getJavaFile().getSourceInputStream().get();
+                return CharStreams.toString(new InputStreamReader(javaSourceInputStream, Charsets.UTF_8));
+            } catch(IOException ex) {
+                throw new IllegalStateException("Can't resolve the Java source file referenced by the source mapping URL!", ex);
+            }            
+        } else if (url.endsWith(".css")) {
             return ((CssResult) result.getSingleResult()).getCssSource();
         } else {
-            return result.getSingleResult().getSource();
+            String response = result.getSingleResult().getSource();
+
+            if (sourceMap.isPresent()) {
+                response += "\n//# sourceMappingURL=" + url.substring(url.lastIndexOf("/") + 1) + ".map";
+            }
+
+            return response;
         }
     }
 
