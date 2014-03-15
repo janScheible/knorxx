@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Knorxx Framework allows to write a HTML/CSS/JavaScript frontend in pure Java. The driving force behind creating the Knorxx Framework was the lack of maintainability of HTML/CSS/JavaScript based frontends. The identifier in all notations and between server and frontend code must be synchronized. This makes changes very hard and it's very difficult to figure out which parts of the application are depending on each other. By using a pure Java codebase and constants to tie all parts together maintainability and analyzability are greatly improved.
+The Knorxx Framework allows to write a HTML/CSS/JavaScript frontend in pure Java. The driving force behind creating the Knorxx Framework was the lack of maintainability of HTML/CSS/JavaScript based frontends. The identifiers in all notations and between server and frontend code must be synchronized. This makes changes very hard and it's very difficult to figure out which parts of the application depend on each other. By using a pure Java codebase and constants to tie all parts together maintainability and analyzability are greatly improved.
 
 The framework has the following features:
   - Despite using Java changes are immediately visible after browser reload
@@ -24,7 +24,7 @@ The code of the Knorxx Framework is distributed under the MIT licence.
 
 ## Sample project
 
-As mentioned above the Spring adapter is the most mature adapter till now. Therefore the **generator-spring-sample-app** is the best source for seeing a Knorxx application running. Just download the current Knorxx distribution, open the framework project (**framework-with-samples**) in Netbeans and run the **generator-spring-sample-app** with Tomcat.
+As mentioned above the Spring adapter is the most mature adapter till now. Therefore the **generator-spring-sample-app** is the best way to see a Knorxx application running. Just download the current Knorxx distribution, open the framework project (**framework-with-samples**) in Netbeans and run the **generator-spring-sample-app** with Tomcat.
 
 To see the reload feature in action edit for example ```SimpleWebPage``` by adding a call to a newly created helper class. Then go back to your browser and reload the page. You will immediately see the changes. More information about how to write the Java code which can be translated to JavaScript see [Writing ST-JS code].
 

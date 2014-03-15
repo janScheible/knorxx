@@ -1,0 +1,7 @@
+/generator/target/
+/generator-javaee-adapter/target/
+/generator-spring-adapter/target/
+/generator-javaee-sample-app/target/
+/generator-ext-js-bridge/target/
+/generator-jquery-ui-bridge/target/
+/generator-spring-sample-app/target/
