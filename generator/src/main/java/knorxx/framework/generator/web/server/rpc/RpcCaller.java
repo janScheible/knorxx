@@ -1,11 +1,14 @@
 package knorxx.framework.generator.web.server.rpc;
 
+import com.google.common.base.Optional;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import knorxx.framework.generator.util.HttpCookieUtils;
 import knorxx.framework.generator.web.client.RpcService;
 import knorxx.framework.generator.web.server.json.JsonHelper;
 import knorxx.framework.generator.web.server.rpc.RpcResult.Status;
@@ -16,8 +19,19 @@ import knorxx.framework.generator.web.server.rpc.RpcResult.Status;
  */
 public class RpcCaller {
     
+    public final static String CSRF_PROTECTION_COOKIE_NAME = "RPCSESSIONID";
+    
     public RpcResult call(RpcCall rpcCall, ExceptionMarshaller exceptionSerializer, JsonHelper jsonHelper, 
             List<RpcService> rpcServices, HttpServletRequest request) {
+        Optional<Cookie> csrfProtectionCookie = HttpCookieUtils.getCookie(CSRF_PROTECTION_COOKIE_NAME, request);
+        if(!csrfProtectionCookie.isPresent()) {
+            throw new MissingCsrfProtectionCookieException(String.format("Can't find a CSRF protection cookie "
+                    + "named '%s'!", CSRF_PROTECTION_COOKIE_NAME));
+        } else if(!csrfProtectionCookie.get().getValue().equals(rpcCall.getCsrfProtectionToken())) {
+            throw new CsrfAttackException(String.format("A CSRF attack was detected while calling the method "
+                    + "'%s' of the service '%s'.", rpcCall.getMethodName(), rpcCall.getServiceName()));
+        }
+        
         for(RpcService rpcService : rpcServices) {
             Class serviceClass = rpcService.getClass();
             if(serviceClass.getName().equals(rpcCall.getServiceName())) {

@@ -2,6 +2,7 @@ package knorxx.framework.generator.web.server.rpc;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import knorxx.framework.generator.web.client.RpcService;
@@ -21,6 +22,8 @@ import org.mockito.Mockito;
  */
 public class RpcCallerTest {
     
+    private final static String CSRF_PROTECTION_TOKEN = "CSRF_PROTECTION_TOKEN";
+    
     private JsonHelper jsonHelper  = new GsonHelper();
     private RpcCaller rpcCaller = new RpcCaller();
 
@@ -32,12 +35,14 @@ public class RpcCallerTest {
         request = Mockito.mock(HttpServletRequest.class);
         session = Mockito.mock(HttpSession.class);
         Mockito.when(request.getSession()).thenReturn(session);
+        Cookie csrfProtectionCookie = new Cookie(RpcCaller.CSRF_PROTECTION_COOKIE_NAME, CSRF_PROTECTION_TOKEN);
+        Mockito.when(request.getCookies()).thenReturn(new Cookie[]{csrfProtectionCookie});
     }
 
     @Test
     public void regularCall() {
         RpcResult result = call(new RpcCall(TestService.class.getName(), TestService.GET_BY_ID_METHOD_NAME, 
-                Lists.newArrayList("null", "12")), new VerboseExceptionMarshaller());
+                CSRF_PROTECTION_TOKEN, Lists.newArrayList("null", "12")), new VerboseExceptionMarshaller());
         assertEquals(RpcResult.Status.SUCCESS, result.getStatus());
         assertThat(result.getJsonResult(), containsString(TestService.GET_BY_ID_RESULT));
     }
@@ -45,7 +50,7 @@ public class RpcCallerTest {
     @Test
     public void causeException() {
         RpcResult result = call(new RpcCall(TestService.class.getName(), TestService.THROW_EXCEPTION_METHOD_NAME, 
-                new ArrayList<String>()), new VerboseExceptionMarshaller());
+                CSRF_PROTECTION_TOKEN, new ArrayList<String>()), new VerboseExceptionMarshaller());
         assertEquals(RpcResult.Status.EXCEPTION, result.getStatus());
         assertThat(result.getJsonResult(), containsString(TestService.THROW_EXCEPTION_NAME));
     }    

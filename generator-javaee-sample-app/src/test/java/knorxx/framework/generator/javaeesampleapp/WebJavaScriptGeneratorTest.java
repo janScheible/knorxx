@@ -31,7 +31,7 @@ public class WebJavaScriptGeneratorTest {
         String allowedGenerationPackage = SimpleWebPage.class.getPackage().getName();
         
         generator  = new WebJavaScriptGenerator(generationRoots, allowedGenerationPackage, allowedReloadPackage,
-                "jsonRpc", new LibraryDetector.None());
+                "/csrfProtectionCookiePath", "/rpcUrl", new LibraryDetector.None());
     }
     
     @Test

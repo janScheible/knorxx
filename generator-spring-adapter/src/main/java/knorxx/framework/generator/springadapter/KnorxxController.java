@@ -59,7 +59,7 @@ import org.springframework.web.servlet.ModelAndView;
 public abstract class KnorxxController implements ApplicationContextAware {
     
     public final static String FRAMEWORK_URL_PREFIX = "knorxx";
-    private final static String JSON_RPC_URL = "/" + FRAMEWORK_URL_PREFIX + "/jsonRpc";
+    private final static String JSON_RPC_URL = "/" + FRAMEWORK_URL_PREFIX + "/rpc";
     
     private final Class<?> applicationRootClass;
     private final Class<?> javaScriptGenerationRoot;    
@@ -161,7 +161,8 @@ public abstract class KnorxxController implements ApplicationContextAware {
         String allowedReloadPackage = applicationRootClass.getPackage().getName();
         
         WebJavaScriptGenerator generator = new WebJavaScriptGenerator(getGenerationRoots(request),
-                allowedGenerationPackage, allowedReloadPackage, JSON_RPC_URL.substring(1), libraryDetector);
+                allowedGenerationPackage, allowedReloadPackage, request.getContextPath() + "/",
+                JSON_RPC_URL.substring(1), libraryDetector);
         GenerationUnit unit = generator.generateAll(Lists.<Class<?>>newArrayList(webPageClass,
                 javaScriptJsonHelper.getClass(), javaScriptErrorHandler.getClass()));
         

@@ -14,7 +14,7 @@ public class RpcServiceFileGeneratorTest {
 
     @Test
     public void generate() throws SingleFileGeneratorException {
-        RpcServiceFileGenerator generator = new RpcServiceFileGenerator("jsonRpc");
+        RpcServiceFileGenerator generator = new RpcServiceFileGenerator("/csrfProtectionCookiePath", "/rpcUrl");
         String source = generator.generate(TestService.class).getSource();
         
         assertThat(source, containsString(".prototype.getById"));

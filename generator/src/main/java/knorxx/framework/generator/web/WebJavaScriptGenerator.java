@@ -49,7 +49,8 @@ public class WebJavaScriptGenerator {
     private final OrderSorter orderSorter = new InheritanceOrderSorter(new StaticUsageOrderSorter());
 
     public WebJavaScriptGenerator(GenerationRoots generationRoots, final String allowedGenerationPackage, 
-            final String allowedReloadPackage, String jsonRpcUrl, LibraryDetector libraryDetector) {
+            final String allowedReloadPackage, String csrfProtectionCookiePath, String rpcUrl, 
+            LibraryDetector libraryDetector) {
         this.generationRoots = generationRoots;
         this.allowedGenerationPackage = allowedGenerationPackage;
         this.allowedReloadPackage = allowedReloadPackage;
@@ -57,7 +58,8 @@ public class WebJavaScriptGenerator {
 
         this.classLoader = createClassLoader();
         this.webSingleFileGenerator = new WebSingleFileGenerator(new StjsSingleFileGenerator(), allowedGenerationPackage,
-                new CssDefinitionFileGenerator(), new MessageQueueFileGenerator(), new RpcServiceFileGenerator(jsonRpcUrl));
+                new CssDefinitionFileGenerator(), new MessageQueueFileGenerator(), 
+                new RpcServiceFileGenerator(csrfProtectionCookiePath, rpcUrl));
     }
 
     private boolean isDataTransferObject(Class<?> javaClass) {

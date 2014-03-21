@@ -18,13 +18,14 @@ public class RpcCallTest {
                 "{" +
                     "\"" + SERVICE_NAME_PROPERTY + "\" : \"dummy.test.Service\"," +
                     "\"" + METHOD_NAME_PROPERTY + "\" : \"getAllButOne\"," +
+                    "\"" + CSRF_PROTECTION_TOKEN_PROPERTY + "\" : \"CSRF_PROTECTION_TOKEN\"," +
                     "\"" + ARGUMENTS_PROPERTY + "\" : [12, \"haha\"]" +
                 "}";
         
         RpcCall rpcCallFromJson = new RpcCall(jsonInput);
         
         RpcCall rpcCallFromRpcCall = new RpcCall(rpcCallFromJson.getServiceName(), rpcCallFromJson.getMethodName(),
-                rpcCallFromJson.getArgumentsJsons());
+                rpcCallFromJson.getCsrfProtectionToken(), rpcCallFromJson.getArgumentsJsons());
         
         JsonHelper jsonHelper = new GsonHelper();
         Assert.assertEquals(jsonHelper.toJson(rpcCallFromRpcCall), jsonInput);
