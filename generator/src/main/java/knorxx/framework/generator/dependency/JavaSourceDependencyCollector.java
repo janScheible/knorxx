@@ -1,13 +1,9 @@
 package knorxx.framework.generator.dependency;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
-import japa.parser.JavaParser;
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.ImportDeclaration;
-import japa.parser.ast.PackageDeclaration;
-import japa.parser.ast.expr.FieldAccessExpr;
-import japa.parser.ast.visitor.VoidVisitorAdapter;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,9 +11,17 @@ import java.util.Set;
 import java.util.TreeSet;
 import knorxx.framework.generator.JavaFile;
 import knorxx.framework.generator.JavaFileOnClasspath;
+import knorxx.framework.generator.util.JavaIdentifierUtils;
 import static knorxx.framework.generator.util.JavaIdentifierUtils.getPackageName;
 import static knorxx.framework.generator.util.JavaIdentifierUtils.isValidClassName;
-import static knorxx.framework.generator.util.JavaIdentifierUtils.isValidConstantName;
+import net.sourceforge.pmd.lang.ParserOptions;
+import net.sourceforge.pmd.lang.java.Java18Parser;
+import net.sourceforge.pmd.lang.java.ast.ASTCompilationUnit;
+import net.sourceforge.pmd.lang.java.ast.ASTImportDeclaration;
+import net.sourceforge.pmd.lang.java.ast.ASTName;
+import net.sourceforge.pmd.lang.java.ast.ASTPackageDeclaration;
+import net.sourceforge.pmd.lang.java.ast.ASTPrimaryPrefix;
+import net.sourceforge.pmd.lang.java.ast.JavaParserVisitorAdapter;
 
 /**
  *
@@ -31,40 +35,45 @@ public class JavaSourceDependencyCollector extends DependencyCollector {
     public JavaSourceDependencyCollector(DependencyCollector nextCollector) {
         super(nextCollector);
     }
-
+    
     @Override
     public Set<String> collect(JavaFileOnClasspath<?> javaFile, ClassLoader classLoader) {
         throw new UnsupportedOperationException("Can't work on Java files without source!");
-    }
-
+    }    
+    
     @Override
     protected Set<String> collectInternal(JavaFile<?> javaFile, final ClassLoader classLoader) {
         final Set<String> result = new TreeSet<>();
 
         Optional<InputStream> sourceInputStream = javaFile.getSourceInputStream();
         if (sourceInputStream.isPresent()) {
+            
             try (InputStream input = sourceInputStream.get()) {
-                CompilationUnit compilationUnit = JavaParser.parse(input);
+                ASTCompilationUnit compilationUnit = (ASTCompilationUnit) new Java18Parser(
+                        new ParserOptions()).parse("", new InputStreamReader(input, Charsets.UTF_8));
 
-                new VoidVisitorAdapter() {
-                    
+                new JavaParserVisitorAdapter() {
+
                     private String packageName;
                     private Set<String> importedClassNames = new HashSet<>();
-                    private List<String> asteriskPackages = new ArrayList<>();
+                    private List<String> asteriskPackages = new ArrayList<>();                
 
                     @Override
-                    public void visit(PackageDeclaration packageDeclaration, Object arg) {
-                        packageName = packageDeclaration.getName().toString();
+                    public Object visit(ASTPackageDeclaration node, Object data) {
+                        packageName = node.getPackageNameImage();
                         asteriskPackages.add(packageName);
-                        super.visit(packageDeclaration, arg);
+                        
+                        return super.visit(node, data);
                     }
 
                     @Override
-                    public void visit(ImportDeclaration importDeclaration, Object arg) {
-                        String className = importDeclaration.getName().toString();
-                       
-                        if (importDeclaration.isStatic()) {
-                            if (importDeclaration.isAsterisk()) {
+                    public Object visit(ASTImportDeclaration node, Object data) {
+                        String className = node.getImportedName();
+                        boolean isStatic = node.isStatic();
+                        boolean isAsterisk = node.isImportOnDemand();
+                        
+                        if (isStatic) {
+                            if (isAsterisk) {
                                 importedClassNames.add(className);
                                 result.add(className);
                             } else {
@@ -73,58 +82,68 @@ public class JavaSourceDependencyCollector extends DependencyCollector {
                                 importedClassNames.add(classNameWithoutStaticPart); 
                                 result.add(classNameWithoutStaticPart);
                             }
-                        } else if(importDeclaration.isAsterisk()) {
+                        } else if(isAsterisk) {
                             if (!asteriskPackages.contains(className)) {
                                 asteriskPackages.add(className);
                             }
                         } else if (isValidClassName(className)) {
                             importedClassNames.add(className);
                         }
-
-                        super.visit(importDeclaration, arg);
-                    }
-
+                        
+                        return super.visit(node, data);
+                    }                   
+                    
                     @Override
-                    public void visit(FieldAccessExpr fieldAccessExpr, Object arg) {
-                        if (isValidConstantName(fieldAccessExpr.getField())) {
-                            String className = fieldAccessExpr.getScope().toString();
+                    public Object visit(ASTPrimaryPrefix node, Object data) {
+                        ASTName name = node.getFirstChildOfType(ASTName.class);
+                        
+                        if(name != null) {
+                            String fieldAccess = name.getImage();
 
-                            if (className.contains(".")) {
-                                if (isValidClassName(className)) {
-                                    result.add(className);
-                                }
-                            } else {
-                                String simpleClassName = className;
-                                boolean resolved = false;
+                            if (fieldAccess.contains(".")) {
+                                String fieldName = JavaIdentifierUtils.getJavaClassSimpleName(fieldAccess);
 
-                                if (isValidClassName(simpleClassName)) {
-                                    // 1. try to find the class in the list of imports 
-                                    for (String importedClassName : importedClassNames) {
-                                        if (importedClassName.endsWith("." + simpleClassName)) {
-                                            result.add(importedClassName);
-                                            resolved = true;
-                                            break;
+                                if (JavaIdentifierUtils.isValidConstantName(fieldName)) {
+                                    String className = JavaIdentifierUtils.getPackageName(fieldAccess);
+
+                                    if (className.contains(".")) {
+                                        if (isValidClassName(className)) {
+                                            result.add(className);
                                         }
-                                    }
+                                    } else {
+                                        String simpleClassName = className;
+                                        boolean resolved = false;
 
-                                    if (!resolved) {
-                                        for (String asteriskPackage : asteriskPackages) {
-                                            // 2. check if it is a class in the same package
-                                            try {
-                                                String classNameWithCurrentPackage = asteriskPackage + "." + simpleClassName;
-                                                Class.forName(classNameWithCurrentPackage, false, classLoader);
-                                                result.add(classNameWithCurrentPackage);
-                                                break;
-                                            } catch (ClassNotFoundException ex) {
-                                                // just do nothing... we are simply not able to resolve the class name... :-(
+                                        if (isValidClassName(simpleClassName)) {
+                                            // 1. try to find the class in the list of imports 
+                                            for (String importedClassName : importedClassNames) {
+                                                if (importedClassName.endsWith("." + simpleClassName)) {
+                                                    result.add(importedClassName);
+                                                    resolved = true;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (!resolved) {
+                                                for (String asteriskPackage : asteriskPackages) {
+                                                    // 2. check if it is a class in the same package
+                                                    try {
+                                                        String classNameWithCurrentPackage = asteriskPackage + "." + simpleClassName;
+                                                        Class.forName(classNameWithCurrentPackage, false, classLoader);
+                                                        result.add(classNameWithCurrentPackage);
+                                                        break;
+                                                    } catch (ClassNotFoundException ex) {
+                                                        // just do nothing... we are simply not able to resolve the class name... :-(
+                                                    }
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-
-                        super.visit(fieldAccessExpr, arg);
+                        
+                        return super.visit(node, data);
                     }
                 }.visit(compilationUnit, null);
             } catch (Exception ex) {
@@ -133,5 +152,5 @@ public class JavaSourceDependencyCollector extends DependencyCollector {
         }
 
         return result;
-    }
+    }    
 }
