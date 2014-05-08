@@ -9,6 +9,8 @@ import com.google.common.io.CharStreams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,6 +22,7 @@ import knorxx.framework.generator.GenerationRoots;
 import knorxx.framework.generator.GenerationUnit;
 import knorxx.framework.generator.library.LibraryDetector;
 import knorxx.framework.generator.library.LibraryUrls;
+import knorxx.framework.generator.reloading.annotation.Reloadable;
 import knorxx.framework.generator.single.JavaScriptResult;
 import static knorxx.framework.generator.springadapter.CacheRequestType.*;
 import static knorxx.framework.generator.springadapter.KnorxxGeneratorCacheConfig.GENERATOR_CACHE_NAME;
@@ -41,6 +44,7 @@ import knorxx.framework.generator.web.server.rtti.RttiGenerator;
 import knorxx.framework.generator.web.server.rtti.UrlResolver;
 import org.joda.time.DateTime;
 import org.rendersnake.HtmlCanvas;
+import org.rendersnake.Renderable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
@@ -187,7 +191,7 @@ public abstract class KnorxxController implements ApplicationContextAware {
                 model.put("webPageModelJson", jsonHelper.toJson(webPageModel));
                 
                 HtmlCanvas htmlCanvas = new HtmlCanvas();
-                pageArranger.renderOn(htmlCanvas);
+                renderPageArranger(request, pageArranger, htmlCanvas, generator.getClassLoader());
                 model.put("preRenderedHtml", htmlCanvas.toHtml());
 
                 break;
@@ -195,7 +199,41 @@ public abstract class KnorxxController implements ApplicationContextAware {
         }
         
         return new ModelAndView("/presentation.jsp", model);
-    }    
+    }
+    
+    private void renderPageArranger(HttpServletRequest request, Renderable pageArranger, HtmlCanvas htmlCanvas, ClassLoader classLoader) throws IOException {
+        Method renderOnMethod = null;
+        
+        try {
+            renderOnMethod = pageArranger.getClass().getMethod("renderOn", HtmlCanvas.class);
+        } catch (NoSuchMethodException | SecurityException ex) {
+            throw new IllegalStateException("Can't find the method renderOn(HtmlCanvas) of a PageArranger. "
+                    + "This might be cause by an API change!");
+        }
+
+        boolean reloadableRenderOn = renderOnMethod.getAnnotation(Reloadable.class) != null;
+        if (reloadableRenderOn) {
+            try {
+                final Object pageArrangerInstance = classLoader.loadClass(pageArranger.getClass().getName()).newInstance();
+                pageArranger = new Renderable() {
+                    @Override
+                    public void renderOn(HtmlCanvas html) throws IOException {
+                        try {
+                            Method renderOnMethod = pageArrangerInstance.getClass().getMethod("renderOn", HtmlCanvas.class);
+                            renderOnMethod.invoke(pageArrangerInstance, html);
+                        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                            throw new IllegalStateException("Can't call renderOn(HtmlCanvas) on the reloaded PageArranger instance!", ex);
+                        }
+                    }
+                };
+            } catch( SecurityException | InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+                throw new IllegalStateException("Can't instantiate a PageArranger with a renderOn(HtmlCanvas) "
+                        + "method marked with @Reloadable! Does it have a default constructor?");
+            }        
+        }
+
+        pageArranger.renderOn(htmlCanvas);
+    }
     
     private GenerationRoots getGenerationRoots(HttpServletRequest request) {
         generationRoots = generationRoots != null ? generationRoots : generationRootsFunction.apply(request);

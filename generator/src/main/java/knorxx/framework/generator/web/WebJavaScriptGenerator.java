@@ -150,5 +150,9 @@ public class WebJavaScriptGenerator {
     public GenerationUnit generateAll(List<Class<?>> javaClasses) {
         return javaScriptGenerator.generateAll(javaClasses, webSingleFileGenerator, Optional.<DependencyCollector>absent(),
                 Optional.of(classLoader), Optional.of(orderSorter), Optional.of(libraryDetector), generationRoots);
-    }    
+    }
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
 }
