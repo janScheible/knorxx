@@ -5,11 +5,13 @@ import java.util.Set;
 import knorxx.framework.generator.BaseGeneratorTestWithMultipleClassLoader;
 import knorxx.framework.generator.JavaFileOnClasspath;
 import knorxx.framework.generator.dependency.testclass.bytecode.AnonymousInnerClass;
+import knorxx.framework.generator.dependency.testclass.bytecode.AnonymousInnerClassWithStaticHelperInSamePackage;
 import knorxx.framework.generator.dependency.testclass.bytecode.DependencyWithInnerClass;
 import knorxx.framework.generator.dependency.testclass.bytecode.InnerClass;
 import knorxx.framework.generator.dependency.testclass.bytecode.NestedInnerClasses;
 import knorxx.framework.generator.dependency.testclass.bytecode.NestedStaticInnerClasses;
 import knorxx.framework.generator.dependency.testclass.bytecode.Simple;
+import knorxx.framework.generator.dependency.testclass.bytecode.StaticHelperClass;
 import knorxx.framework.generator.dependency.testclass.bytecode.StaticInnerClass;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertThat;
@@ -39,24 +41,29 @@ public class ByteCodeDependencyCollectorTest extends BaseGeneratorTestWithMultip
     public void staticInnerClass() {
         test(StaticInnerClass.class, Sets.newHashSet("java.awt.Color", "java.awt.Rectangle"));
     }
-    
+
     @Test
     public void nestedStaticInnerClasses() {
-        test(NestedStaticInnerClasses.class, Sets.newHashSet("java.awt.Color", "java.awt.Rectangle", 
+        test(NestedStaticInnerClasses.class, Sets.newHashSet("java.awt.Color", "java.awt.Rectangle",
                 "java.awt.Point"));
     }
-    
+
     @Test
     public void nestedInnerClasses() {
-        test(NestedInnerClasses.class, Sets.newHashSet("java.awt.Color", "java.awt.Rectangle", 
+        test(NestedInnerClasses.class, Sets.newHashSet("java.awt.Color", "java.awt.Rectangle",
                 "java.awt.Point"));
-    }    
-    
+    }
+
     @Test
     public void anonymousInnerClass() {
         test(AnonymousInnerClass.class, Sets.newHashSet("java.awt.Rectangle"));
     }
-    
+
+    @Test
+    public void anonymousInnerClassWithStaticHelperInSamePackage() {
+        test(AnonymousInnerClassWithStaticHelperInSamePackage.class, Sets.newHashSet(StaticHelperClass.class.getName()));
+    }
+
     @Test
     public void dependencyWithInnerClass() {
         test(DependencyWithInnerClass.class, Sets.newHashSet("com.projetloki.genesis.Properties"));

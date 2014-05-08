@@ -8,7 +8,9 @@ import knorxx.framework.generator.JavaFile;
 import static knorxx.framework.generator.util.JavaIdentifierUtils.getJavaClassNestingLevel;
 import static knorxx.framework.generator.util.JavaIdentifierUtils.isInnerClass;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.commons.EmptyVisitor;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 
@@ -36,24 +38,26 @@ public class ByteCodeDependencyCollector extends DependencyCollector {
         InputStream classInputStream = currentJavaFile.getClassInputStream();
         try {
             ClassReader classReader = new ClassReader(classInputStream);
-            classReader.accept(new RemappingClassAdapter(new EmptyVisitor() {
+            
+            // 1. Collect the types of member variables and method parameters
+            classReader.accept(new RemappingClassAdapter(new ClassVisitor(Opcodes.ASM5) {
             }, new Remapper() {
                 @Override
                 public String mapFieldName(String owner, String name, String desc) {
-                    addType(owner);
+                    addType(owner, result);
                     return super.mapFieldName(owner, name, desc);
                 }
 
                 @Override
                 public String mapMethodName(String owner, String name, String desc) {
-                    addType(owner);
+                    addType(owner, result);
                     return super.mapMethodName(owner, name, desc);
                 }
 
                 @Override
                 public String mapDesc(final String desc) {
                     if (desc.startsWith("L")) {
-                        addType(desc.substring(1, desc.length() - 1));
+                        addType(desc.substring(1, desc.length() - 1), result);
                     }
                     return super.mapDesc(desc);
                 }
@@ -61,23 +65,36 @@ public class ByteCodeDependencyCollector extends DependencyCollector {
                 @Override
                 public String[] mapTypes(final String[] types) {
                     for (final String type : types) {
-                        addType(type);
+                        addType(type, result);
                     }
                     return super.mapTypes(types);
                 }
 
                 @Override
                 public String mapType(final String type) {
-                    addType(type);
+                    addType(type, result);
                     return type;
                 }
-
-                private void addType(final String type) {
-                    final String className = type.replace('/', '.');
-                    result.add(className);
-                }
             }), ClassReader.EXPAND_FRAMES);
+            
+            // 2. Collect the classes on which methods are called on
+            classReader.accept(new ClassVisitor(Opcodes.ASM5) {
 
+                @Override
+                public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+                    MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);;
+                    return new MethodVisitor(Opcodes.ASM5, methodVisitor) {
+
+                        @Override
+                        public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+                            addType(owner, result);
+                            super.visitMethodInsn(opcode, owner, name, desc, itf);
+                        }
+                    };
+                }
+                
+            }, ClassReader.EXPAND_FRAMES);
+            
             int currentNestingLevel = getJavaClassNestingLevel(currentJavaFile.getJavaClassName());
             
             for(String innerClass : new TreeSet<>(result)) {
@@ -100,5 +117,10 @@ public class ByteCodeDependencyCollector extends DependencyCollector {
         }
 
         return result;
+    }
+    
+    private void addType(final String type, Set<String> result) {
+        final String className = type.replace('/', '.');
+        result.add(className);
     }
 }

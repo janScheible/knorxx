@@ -55,9 +55,8 @@ public class ReloadingClassLoader extends ClassLoader {
                     if (reloadPredicate.apply(originalClass, javaFile instanceof NotYetLoadedJavaFile)) {
                         byte[] classData = javaFile.readClass();
                         AddAnnotationClassChangeVisitor addAnnotationClassChangeVisitor = new AddAnnotationClassChangeVisitor(originalClass, annotationDescriptions);
-                        byte[] classDataWithNamespaceAnnotation = addAnnotationClassChangeVisitor.apply(classData);
-
-                        javaClass = defineClass(name, classDataWithNamespaceAnnotation, 0, classDataWithNamespaceAnnotation.length);
+                        byte[] classDataWithAnnotations = addAnnotationClassChangeVisitor.apply(classData);
+                        javaClass = defineClass(name, classDataWithAnnotations, 0, classDataWithAnnotations.length);
                     } else {
                         javaClass = originalClass;
                     }

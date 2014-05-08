@@ -1,19 +1,20 @@
 package knorxx.framework.generator.reloading;
 
-import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 
 /**
  *
  * @author sj
  */
-public abstract class ClassChangeVisitor extends ClassAdapter {
+public abstract class ClassChangeVisitor extends ClassVisitor {
 
     private final ClassWriter classWriter;
 
     public ClassChangeVisitor(ClassWriter classWriter) {
-        super(classWriter);
+        super(Opcodes.ASM5, classWriter);
         this.classWriter = classWriter;
     }
 
