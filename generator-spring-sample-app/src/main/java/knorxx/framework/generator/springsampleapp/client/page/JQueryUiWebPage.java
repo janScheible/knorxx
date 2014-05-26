@@ -9,7 +9,6 @@ import org.stjs.javascript.Date;
 import static org.stjs.javascript.Global.alert;
 import org.stjs.javascript.dom.Element;
 import org.stjs.javascript.jquery.Event;
-import org.stjs.javascript.jquery.EventHandler;
 import static org.stjs.javascript.jquery.GlobalJQueryUI.$;
 import org.stjs.javascript.jquery.plugins.ButtonOptions;
 
@@ -29,12 +28,9 @@ public class JQueryUiWebPage extends AbstractWebPage {
         $(TITLE_ID).text("JQuery UI WebPage").addClass(HEADING_STYLE);
         ButtonOptions buttonOptions = new ButtonOptions();
         buttonOptions.label = ((Date)getModel().$get(MY_MODEL_KEY)).toGMTString();
-        $("#" + MY_CONTENT_ID).button(buttonOptions).click(new EventHandler() {
-            @Override
-            public boolean onEvent(Event ev, Element THIS) {
-                alert("clicked :-)");
-                return true;
-            }
+        $("#" + MY_CONTENT_ID).button(buttonOptions).click((Event ev, Element THIS) -> {
+			alert("clicked :-)");
+			return true;
         });
     }    
 }

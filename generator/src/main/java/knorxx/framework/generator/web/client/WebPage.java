@@ -3,7 +3,6 @@ package knorxx.framework.generator.web.client;
 import knorxx.framework.generator.web.client.webpage.PageModel;
 import org.stjs.javascript.Map;
 import org.stjs.javascript.annotation.Namespace;
-import org.stjs.javascript.annotation.Template;
 
 /**
  *
@@ -18,8 +17,7 @@ public abstract class WebPage {
     
     public abstract void render();
     
-    @Template("propertyAccess")
     public Map<String, Object> getModel() {
-        return ((PageModel)(Object)this).$model();
+        return ((PageModel)(Object)this).model;
     }
 }

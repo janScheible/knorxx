@@ -6,7 +6,6 @@ import knorxx.framework.generator.springsampleapp.client.util.AbstractWebPage;
 import knorxx.framework.generator.springsampleapp.server.model.TestEntity;
 import knorxx.framework.generator.springsampleapp.server.service.StorageService;
 import org.springframework.stereotype.Component;
-import org.stjs.javascript.functions.Callback1;
 import static org.stjs.javascript.jquery.GlobalJQuery.$;
 
 /**
@@ -21,11 +20,8 @@ public class ServiceWebPage extends AbstractWebPage {
     public void onLoad() {
         $(TITLE_ID).text("Service WebPage").addClass(HEADING_STYLE);
 
-        storageService.getById(null, 0, new Callback1<TestEntity>() {
-            @Override
-            public void $invoke(TestEntity testEntity) {
-                $(CONTENT_ID).append($("<div></div>").text(testEntity.getName()).addClass(HIGHLIGHT_STYLE));
-            }
+        storageService.getById(null, 0, (TestEntity testEntity) -> {
+			$(CONTENT_ID).append($("<div></div>").text(testEntity.getName()).addClass(HIGHLIGHT_STYLE));
         }, this);
     }
 }

@@ -10,7 +10,5 @@ import org.stjs.javascript.annotation.SyntheticType;
 @SyntheticType
 public class PageModel {
     
-    public Map<String, Object> $model() {
-        throw new UnsupportedOperationException();
-    }
+    public Map<String, Object> model;
 }

@@ -10,9 +10,7 @@ import knorxx.framework.generator.web.client.messagequeue.MessageQueueResponse;
 import org.springframework.stereotype.Component;
 import org.stjs.javascript.Date;
 import org.stjs.javascript.dom.Element;
-import org.stjs.javascript.functions.Callback1;
 import org.stjs.javascript.jquery.Event;
-import org.stjs.javascript.jquery.EventHandler;
 import static org.stjs.javascript.jquery.GlobalJQuery.$;
 import org.stjs.javascript.jquery.JQuery;
 
@@ -49,12 +47,9 @@ public class ChatWebPage extends AbstractWebPage {
         $(CONTENT_ID).append(input = $("<input id=\"chatInput\" type=\"text\"></input>"));
         $(CONTENT_ID).append(status = $("<div id=\"chatStatus\"></div>"));
 
-        input.keydown(new EventHandler() {
-            @Override
-            public boolean onEvent(Event event, Element THIS) {
-                that.onInputKeyDown(event);
-                return true;
-            }
+        input.keydown((Event event, Element THIS) ->  {
+			that.onInputKeyDown(event);
+			return true;
         });                
     }
 
@@ -63,25 +58,16 @@ public class ChatWebPage extends AbstractWebPage {
         
         MessageQueueCallbacks<Data> callbacks = new MessageQueueCallbacks<Data>();
 
-        callbacks.onOpen = new Callback1<MessageQueueResponse>() {
-            @Override
-            public void $invoke(MessageQueueResponse response) {
-                that.onOpen(response);
-            }
+        callbacks.onOpen = (MessageQueueResponse response) -> {
+			that.onOpen(response);
         };
 
-        callbacks.onMessage = new Callback1<MessageQueueResponse<Data>>() {
-            @Override
-            public void $invoke(MessageQueueResponse<Data> response) {
-                that.onMessage(response);
-            }
+        callbacks.onMessage = (MessageQueueResponse<Data> response) -> {
+			that.onMessage(response);
         };
 
-        callbacks.onClose = new Callback1<MessageQueueResponse>() {
-            @Override
-            public void $invoke(MessageQueueResponse response) {
-                that.onClose(response);
-            }
+        callbacks.onClose = (MessageQueueResponse response) -> {
+			that.onClose(response);
         };
 
         connection = chatQueue.subscribe(callbacks);

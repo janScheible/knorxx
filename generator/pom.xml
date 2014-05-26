@@ -17,7 +17,7 @@
     </parent>
     
     <properties>
-        <stjs-version>2.0.1</stjs-version>        
+        <stjs-version>3.0.1-knorxx</stjs-version>        
     </properties>
     
     <repositories>
@@ -98,7 +98,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>            
+            </plugin>
         </plugins>
     </build>
     

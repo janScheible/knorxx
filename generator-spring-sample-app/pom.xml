@@ -21,8 +21,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.1</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>  
@@ -100,6 +100,11 @@
             <artifactId>spring-adapter</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.st-js</groupId>
+            <artifactId>stjs-generator-plugin-java8</artifactId>
+            <version>3.0.1</version>
+        </dependency>         
         <dependency>
             <groupId>knorxx.framework.generator</groupId>
             <artifactId>jquery-ui-bridge</artifactId>
