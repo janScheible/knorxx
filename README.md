@@ -1,6 +1,7 @@
 # Knorxx Framework
 
 ## News
+11.06.2014: [Article about the Knorxx Framework on JAXenter.de](http://jaxenter.de/artikel/Das-Knorxx-Framework-174063) (in German)
 26.05.2014: Java 8 is supported now
 
 ## Introduction
