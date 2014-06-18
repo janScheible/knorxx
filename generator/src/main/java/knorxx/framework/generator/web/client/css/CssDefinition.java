@@ -1,4 +1,4 @@
-package knorxx.framework.generator.web.client;
+package knorxx.framework.generator.web.client.css;
 
 import com.projetloki.genesis.Properties.Builder;
 import com.projetloki.genesis.image.Color;

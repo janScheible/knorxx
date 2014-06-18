@@ -2,7 +2,7 @@ package knorxx.framework.generator.javaeesampleapp.client.appearance;
 
 import com.projetloki.genesis.Properties;
 import java.awt.Color;
-import knorxx.framework.generator.web.client.CssDefinition;
+import knorxx.framework.generator.web.client.css.CssDefinition;
 
 /**
  *

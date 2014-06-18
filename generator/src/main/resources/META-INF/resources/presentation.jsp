@@ -42,7 +42,7 @@
     <body>
         <table style="border: 3px solid #42B4E6;">
             <tr>
-                <td>
+                <td id="container">
                     <div id="menu"></div>
                     <h1 id="title">Login</h1>
                     <div id="content">

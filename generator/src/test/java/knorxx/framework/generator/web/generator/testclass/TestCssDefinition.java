@@ -2,8 +2,8 @@ package knorxx.framework.generator.web.generator.testclass;
 
 import com.projetloki.genesis.Properties;
 import java.awt.Color;
-import static knorxx.framework.generator.web.client.CssDefinition.build;
-import static knorxx.framework.generator.web.client.CssDefinition.converColor;
+import static knorxx.framework.generator.web.client.css.CssDefinition.build;
+import static knorxx.framework.generator.web.client.css.CssDefinition.converColor;
 
 /**
  *
