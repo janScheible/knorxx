@@ -46,11 +46,8 @@ To see the reload feature in action edit for example ```SimpleWebPage``` by addi
 ```java
 public class DemoPage extends WebPage {
 	public void render() {
-		$(window).load(new EventHandler() {
-			@Override
-			public boolean onEvent(Event evt, Element el) {
-				alert("This is actually Java... ;-)");
-			}
+		$(window).load((Event evt, Element el) -> {
+			alert("This is actually Java... ;-)");
 		});
 	}
 }
@@ -83,11 +80,8 @@ public class StorageService implements RpcService {
 #### Client side code
 
 ```java
-storageService.getById(0, new Callback1<TestEntity>() {
-	@Override
-	public void $invoke(TestEntity testEntity) {
-		alert(testEntity.getName());
-	}
+storageService.getById(0, (TestEntity testEntity) -> {
+	alert(testEntity.getName());
 }, this);
 ```
 
