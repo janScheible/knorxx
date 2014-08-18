@@ -79,8 +79,8 @@ public abstract class KnorxxController implements ApplicationContextAware {
     @Autowired
     KnorxxApplication knorxxApplication;
     
-    @Autowired
-    Collection<RpcService> rpcServices;    
+    @Autowired(required = false)
+    Collection<RpcService> rpcServices = new ArrayList<>();
     
     ApplicationContext applicationContext;
     
