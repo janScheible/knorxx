@@ -33,7 +33,9 @@ public class StaticUsageOrderSorter extends OrderSorter {
 
                         if (value != null) {
                             String referencedValueClassName = value.getClass().getName();
-                            result.addConstraint(referencedValueClassName, javaClassName);
+							if(!referencedValueClassName.equals(javaClassName)) { // NOTE Enums types seem to reference themself...
+							   result.addConstraint(referencedValueClassName, javaClassName);
+							}
                         }
                     } catch (IllegalArgumentException | IllegalAccessException ex) {
                         throw new IllegalStateException("Error while analyzing the static fields of '" + javaClass.getName() + "'!", ex);
