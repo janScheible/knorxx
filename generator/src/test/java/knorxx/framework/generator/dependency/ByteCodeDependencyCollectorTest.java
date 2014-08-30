@@ -7,6 +7,7 @@ import knorxx.framework.generator.JavaFileOnClasspath;
 import knorxx.framework.generator.dependency.testclass.bytecode.AnonymousInnerClass;
 import knorxx.framework.generator.dependency.testclass.bytecode.AnonymousInnerClassWithStaticHelperInSamePackage;
 import knorxx.framework.generator.dependency.testclass.bytecode.DependencyWithInnerClass;
+import knorxx.framework.generator.dependency.testclass.bytecode.Enumeration;
 import knorxx.framework.generator.dependency.testclass.bytecode.InnerClass;
 import knorxx.framework.generator.dependency.testclass.bytecode.NestedInnerClasses;
 import knorxx.framework.generator.dependency.testclass.bytecode.NestedStaticInnerClasses;
@@ -68,6 +69,11 @@ public class ByteCodeDependencyCollectorTest extends BaseGeneratorTestWithMultip
     public void dependencyWithInnerClass() {
         test(DependencyWithInnerClass.class, Sets.newHashSet("com.projetloki.genesis.Properties"));
     }
+	
+	@Test
+    public void enumeration() {
+		test(Enumeration.class, Sets.newHashSet("java.net.StandardProtocolFamily"));
+	}
 
     private <T> void test(Class<T> javaClass, Set<String> expectedDependencies) {
         ByteCodeDependencyCollector dependencyCollector = new ByteCodeDependencyCollector();
