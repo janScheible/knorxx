@@ -1,7 +1,7 @@
 package knorxx.framework.generator.library;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -9,14 +9,14 @@ import java.util.List;
  */
 public class LibraryUrls {
     
-    private final List<String> javaScriptUrls = new ArrayList<>();
-    private final List<String> cssUrls = new ArrayList<>();
+    private final Set<String> javaScriptUrls = new HashSet<>();
+    private final Set<String> cssUrls = new HashSet<>();
 
-    public List<String> getCssUrls() {
+    public Set<String> getCssUrls() {
         return cssUrls;
     }
 
-    public List<String> getJavaScriptUrls() {
+    public Set<String> getJavaScriptUrls() {
         return javaScriptUrls;
     }    
 
