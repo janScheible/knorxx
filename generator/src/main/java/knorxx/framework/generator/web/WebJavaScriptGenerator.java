@@ -1,6 +1,7 @@
 package knorxx.framework.generator.web;
 
 import com.google.common.base.Optional;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import knorxx.framework.generator.web.client.messagequeue.annotation.QueueMessag
 import knorxx.framework.generator.web.generator.CssDefinitionFileGenerator;
 import knorxx.framework.generator.web.generator.MessageQueueFileGenerator;
 import knorxx.framework.generator.web.generator.RpcServiceFileGenerator;
+import knorxx.framework.generator.web.generator.annotation.OmitNamespace;
 import org.stjs.javascript.annotation.Namespace;
 import org.stjs.javascript.annotation.STJSBridge;
 import org.stjs.javascript.annotation.SyntheticType;
@@ -87,7 +89,8 @@ public class WebJavaScriptGenerator {
         annotationDescriptions.add(new ClassAnnotationDescription(Namespace.class) {
             @Override
             public boolean isApplicable(Class<?> javaClass, String memberName) {
-                return isAllowedClass(javaClass);
+				Annotation omitNamespace = javaClass.getAnnotation(OmitNamespace.class);
+                return isAllowedClass(javaClass) && omitNamespace == null;
             }
 
             @Override
