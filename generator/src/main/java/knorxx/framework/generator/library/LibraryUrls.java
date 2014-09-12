@@ -1,6 +1,6 @@
 package knorxx.framework.generator.library;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -9,8 +9,8 @@ import java.util.Set;
  */
 public class LibraryUrls {
     
-    private final Set<String> javaScriptUrls = new HashSet<>();
-    private final Set<String> cssUrls = new HashSet<>();
+    private final Set<String> javaScriptUrls = new LinkedHashSet<>();
+    private final Set<String> cssUrls = new LinkedHashSet<>();
 
     public Set<String> getCssUrls() {
         return cssUrls;

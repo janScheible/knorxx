@@ -181,7 +181,7 @@ public abstract class KnorxxController implements ApplicationContextAware {
         LibraryUrls cacheUrls = populateCache(unit, rttiGenerationResult, urlResolver);
         model.put("cssUrls", cacheUrls.getCssUrls());
         model.put("javaScriptUrls", cacheUrls.getJavaScriptUrls());
-        
+		
         model.put("webPageModelJson", "{}");
         for(PageArranger pageArranger : applicationContext.getBeansOfType(PageArranger.class).values()) {
             if(webPageClass.getAnnotation(WebPageArranger.class) != null &&
@@ -244,6 +244,7 @@ public abstract class KnorxxController implements ApplicationContextAware {
         LibraryUrls cacheUrls = new LibraryUrls();
         Cache generatorCache = cacheManager.getCache(GENERATOR_CACHE_NAME);
         
+		// place RTTI URL last (otherwise the class definitions whould override the RTTI static members)
         for(GenerationResult result : Iterables.concat(unit.getGenerationResults(), Lists.newArrayList(rttiGenerationResult))) {
             if(result.getSingleResult() instanceof CssResult) {
                 String cssUrl = urlResolver.resolveCssFile(result.getName());
