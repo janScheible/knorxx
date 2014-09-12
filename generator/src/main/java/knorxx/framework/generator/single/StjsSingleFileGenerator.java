@@ -15,12 +15,14 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import javax.lang.model.type.TypeMirror;
 import knorxx.framework.generator.JavaFileWithSource;
 import knorxx.framework.generator.reloading.ReloadingClassLoader;
 import knorxx.framework.generator.single.api.ApiChangeException;
 import knorxx.framework.generator.single.api.ApiMethodNameChangeException;
 import knorxx.framework.generator.single.api.ApiMethodParamterChangeException;
 import knorxx.framework.generator.single.api.ApiReflectionException;
+import knorxx.framework.generator.util.JavaIdentifierUtils;
 import org.stjs.generator.GenerationContext;
 import org.stjs.generator.Generator;
 import org.stjs.generator.GeneratorConfiguration;
@@ -88,7 +90,31 @@ public class StjsSingleFileGenerator extends SingleFileGenerator {
 			}
 		});
         
-        JavaScriptNameProvider names = new DefaultJavaScriptNameProvider();
+        JavaScriptNameProvider names = new DefaultJavaScriptNameProvider() {
+
+			@Override
+			public String getTypeName(GenerationContext<?> context, TypeMirror type) {
+				String typeName = super.getTypeName(context, type);
+				
+				// NOTE Using toString() here seems to work currently but is super hack and might break in the future... ;-(
+				if(!type.toString().equals(typeName) && !type.toString().contains("$")) {
+					try {
+						String className = type.toString();
+						className = className.contains("<") ? className.substring(0, className.indexOf("<")) : className;
+						Class javaClass = classLoader.loadClass(className);
+						
+						if(JavaIdentifierUtils.hasSuperclassOrImplementsInterface(javaClass, Enum.class.getName())) {
+							return type.toString();
+						}
+					} catch (ClassNotFoundException ex) {
+						context.addError(context.getCurrentPath().getLeaf(), "Error while resolving the class '" + 
+								type.toString() + "' for namespace generation of external enum types.");
+					}
+				}
+				
+				return typeName;
+			}
+		};
 		GenerationPlugins<Object> currentClassPlugins = new GenerationPlugins<>().forClass(clazz);
         
         GeneratorConfiguration configuration = configurationBuilder.build();        
