@@ -13,6 +13,10 @@ import static org.stjs.javascript.jquery.GlobalJQuery.$;
  */
 public abstract class AbstractWebPage extends WebPage {
 
+	public static final String MENU_ID = "#menu";
+    public static final String TITLE_ID = "#title";
+    public static final String CONTENT_ID = "#content";
+	
     @Override
     public void render() {
         final AbstractWebPage that = this;

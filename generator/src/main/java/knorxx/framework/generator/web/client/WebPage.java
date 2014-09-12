@@ -11,11 +11,7 @@ import org.stjs.javascript.annotation.Namespace;
 @Namespace("knorxx.framework.generator.web.client")
 public abstract class WebPage {
     
-	public static final String CONTAINER_ID = "#container";
-	
-    public static final String MENU_ID = "#menu";
-    public static final String TITLE_ID = "#title";
-    public static final String CONTENT_ID = "#content";
+	public static final String CONTAINER_ID = "#knorxxWebPageContainer";
     
     public abstract void render();
     

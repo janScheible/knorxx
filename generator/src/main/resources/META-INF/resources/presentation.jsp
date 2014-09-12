@@ -40,17 +40,9 @@
         </script>        
     </head>
     <body>
-        <table style="border: 3px solid #42B4E6;">
-            <tr>
-                <td id="container">
-                    <div id="menu"></div>
-                    <h1 id="title">Login</h1>
-                    <div id="content">
-                        <c:if test="${not empty preRenderedHtml}">${preRenderedHtml}</c:if>
-                    </div>
-                </td>
-            </tr>
-        </table>
+		<div id="knorxxWebPageContainer">
+			<c:if test="${not empty preRenderedHtml}">${preRenderedHtml}</c:if>
+		</div>
         
         <c:if test="${not empty mainClassName}"><script type="text/javascript">
             var page = new ${mainClassName}();
