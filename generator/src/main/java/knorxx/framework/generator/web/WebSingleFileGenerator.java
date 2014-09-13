@@ -67,7 +67,7 @@ public class WebSingleFileGenerator extends SingleFileGenerator {
         return genericSingleFileGenerator.isGeneratable(javaClass);
     }
     
-    private Optional<String> getPreGeneratedSource(Class<?> javaClass) {
+    public static Optional<String> getPreGeneratedSource(Class<?> javaClass) {
         URL url = javaClass.getResource(javaClass.getSimpleName() + ".js");
         
         if (url != null) {

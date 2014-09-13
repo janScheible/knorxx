@@ -1,10 +1,13 @@
 package knorxx.framework.generator.web.generator;
 
+import com.google.common.base.Optional;
 import java.util.ArrayList;
 import java.util.List;
+import knorxx.framework.generator.reloading.NotYetLoadedJavaFile;
 import knorxx.framework.generator.single.JavaScriptResult;
 import knorxx.framework.generator.single.SingleFileGeneratorException;
 import knorxx.framework.generator.single.SingleResult;
+import knorxx.framework.generator.web.WebSingleFileGenerator;
 import knorxx.framework.generator.web.generator.stjs.StjsJavaScriptClassBuilder;
 
 /**
@@ -30,6 +33,6 @@ public class EnumGenerator extends SpecialFileGenerator {
 
 	@Override
 	public boolean isGeneratable(Class<?> javaClass) {
-		return javaClass.isEnum();
+		return javaClass.isEnum() && WebSingleFileGenerator.getPreGeneratedSource(javaClass).isPresent();
 	}
 }
