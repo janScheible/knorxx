@@ -1,5 +1,6 @@
 package knorxx.framework.generator;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.collect.Lists;
@@ -18,12 +19,16 @@ import knorxx.framework.generator.single.SingleResult;
 import static knorxx.framework.generator.util.JavaIdentifierUtils.javaClassNamesToPackages;
 import static knorxx.framework.generator.util.JavaIdentifierUtils.removeJavaCoreClassNames;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author sj
  */
 public class JavaScriptGenerator {
+	
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * @param dependencyCollector If no dependency collector is supplied the ByteCodeDependencyCollector and the 
@@ -106,6 +111,8 @@ public class JavaScriptGenerator {
     private GenerationUnit generate(Class<?> javaClass, SingleFileGenerator singleFileGenerator,
             DependencyCollector dependencyCollector, ClassLoader classLoader, OrderSorter orderSorter,
             LibraryDetector libraryDetector, GenerationRoots generationRoots, GenerationUnit unit) {
+		logger.info("Generating JavaScript for {}", javaClass.getName());
+		
         JavaFileWithSource javaFile = new JavaFileWithSource<>(javaClass, generationRoots);
         checkArgument(!javaFile.isInnerClass(), "It's not possible to generate JavaScript for inner classes!");
 
@@ -114,6 +121,7 @@ public class JavaScriptGenerator {
         unit.addVisitedClass(javaFile.getJavaClassName());
         unit.removeMissingDependencies(javaFile.getJavaClassName());
         Set<String> dependencies = dependencyCollector.collect(javaFile, classLoader);
+		logger.debug("Dependencies: {}", Joiner.on(", ").join(dependencies));
         
         unit.getLibraryUrls().addAll(libraryDetector.detect(dependencies));
 
@@ -125,7 +133,10 @@ public class JavaScriptGenerator {
         }
 
         dependencies = removeJavaCoreClassNames(dependencies);
+		logger.debug("Dependencies after removal of Java core classes: {}", Joiner.on(", ").join(dependencies));
         dependencies = singleFileGenerator.removeNotGeneratableJavaClasses(dependencies, classLoader);
+		logger.debug("Dependencies after removal of not generatable Java classes (by {}): {}", 
+				singleFileGenerator.getClass().getSimpleName(), Joiner.on(", ").join(dependencies));
         
         unit.addGenerationResult(new GenerationResult(javaFile, new DateTime(), dependencies, singleResult), orderSorter);
         unit.addMissingDependencies(dependencies);
