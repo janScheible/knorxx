@@ -96,7 +96,7 @@ public class StjsSingleFileGenerator extends SingleFileGenerator {
 			public String getTypeName(GenerationContext<?> context, TypeMirror type) {
 				String typeName = super.getTypeName(context, type);
 				
-				// NOTE Using toString() here seems to work currently but is super hack and might break in the future... ;-(
+				// NOTE Using toString() here seems to work currently but is super hacky and might break in the future... ;-(
 				if(!type.toString().equals(typeName) && !type.toString().contains("$")) {
 					try {
 						String className = type.toString();
@@ -108,7 +108,7 @@ public class StjsSingleFileGenerator extends SingleFileGenerator {
 						}
 					} catch (ClassNotFoundException ex) {
 						context.addError(context.getCurrentPath().getLeaf(), "Error while resolving the class '" + 
-								type.toString() + "' for namespace generation of external enum types.");
+								type.toString() + "' for namespace generation of an external enum type.");
 					}
 				}
 				
