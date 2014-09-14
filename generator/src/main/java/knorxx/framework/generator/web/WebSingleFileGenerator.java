@@ -12,12 +12,16 @@ import knorxx.framework.generator.single.JavaScriptResult;
 import knorxx.framework.generator.single.SingleFileGenerator;
 import knorxx.framework.generator.single.SingleFileGeneratorException;
 import knorxx.framework.generator.single.SingleResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author sj
  */
 public class WebSingleFileGenerator extends SingleFileGenerator {
+	
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
     private final SingleFileGenerator genericSingleFileGenerator;
     private final String allowedGenerationPackage;
@@ -32,14 +36,19 @@ public class WebSingleFileGenerator extends SingleFileGenerator {
     }
 
     @Override
-    public SingleResult generate(JavaFileWithSource<?> javaFile, ClassLoader classLoader, Set<String> allowedPackages) throws SingleFileGeneratorException {
+    public SingleResult generate(JavaFileWithSource<?> javaFile, ClassLoader classLoader, 
+			Set<String> allowedPackages) throws SingleFileGeneratorException {
+		logger.info("Generating JavaScript for {}", javaFile.getJavaClassName());
+		
         Optional<String> preGeneratedSource = getPreGeneratedSource(javaFile.getJavaClass());
         
         if (preGeneratedSource.isPresent()) {
+			logger.debug("Found pre generated source.");
             return new JavaScriptResult(preGeneratedSource.get());
         } else {
             for(SingleFileGenerator specialFileGenerator : specialFileGenerators) {
                 if(specialFileGenerator.isGeneratable(javaFile.getJavaClass())) {
+					logger.debug("Using a special file generator of the class {}", specialFileGenerator.getClass().getSimpleName());
                     return specialFileGenerator.generate(javaFile, classLoader, allowedPackages);
                 }
             }
