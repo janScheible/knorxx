@@ -14,6 +14,9 @@ import org.joda.time.DateTime;
  * @author sj
  */
 public class JavaFileWithSource<T> extends JavaFile<T> {
+	
+	// NOTE Using this meaningless generation root forces a search on the classpath only.
+	private final static GenerationRoots MEANINGLESS_GENERATION_ROOTS = new GenerationRoots.Simple("", "");
 
     protected final File sourceFile;
     protected final URL sourceUrl;
@@ -27,6 +30,17 @@ public class JavaFileWithSource<T> extends JavaFile<T> {
         this(javaClass, JavaFileWithSource.getJavaSourceFile(javaClass.getName(), generationRoots), 
                 JavaFileWithSource.getJavaClassFile(javaClass.getName(), generationRoots));
     }
+	
+	/**
+	 * Tries to resolve the Java source of the given class on the classpath only.
+	 */
+	public static <T> Optional<JavaFileWithSource<T>> fromClasspathOnly(Class<T> javaClass) {
+		try {
+			return Optional.<JavaFileWithSource<T>>of(new JavaFileWithSource(javaClass, MEANINGLESS_GENERATION_ROOTS));
+		} catch(IllegalStateException ex) { // TODO Don't use exception for control flow... but at least it's encaspulated here... ;-(
+			return Optional.absent();
+		}
+	}
     
     protected JavaFileWithSource(Class<T> javaClass, String javaClassName, GenerationRoots generationRoots) {
         this(javaClass, JavaFileWithSource.getJavaSourceFile(javaClassName, generationRoots), 

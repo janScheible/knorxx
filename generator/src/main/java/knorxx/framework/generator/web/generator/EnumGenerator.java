@@ -1,13 +1,12 @@
 package knorxx.framework.generator.web.generator;
 
-import com.google.common.base.Optional;
 import java.util.ArrayList;
 import java.util.List;
-import knorxx.framework.generator.reloading.NotYetLoadedJavaFile;
+import knorxx.framework.generator.JavaFileWithSource;
 import knorxx.framework.generator.single.JavaScriptResult;
 import knorxx.framework.generator.single.SingleFileGeneratorException;
 import knorxx.framework.generator.single.SingleResult;
-import knorxx.framework.generator.web.WebSingleFileGenerator;
+import knorxx.framework.generator.util.JavaIdentifierUtils;
 import knorxx.framework.generator.web.generator.stjs.StjsJavaScriptClassBuilder;
 
 /**
@@ -17,7 +16,7 @@ import knorxx.framework.generator.web.generator.stjs.StjsJavaScriptClassBuilder;
  * @author sj
  */
 public class EnumGenerator extends SpecialFileGenerator {
-
+	
 	@Override
 	public SingleResult generate(Class<?> javaClass) throws SingleFileGeneratorException {
 		List<String> constants = new ArrayList<>();
@@ -33,6 +32,7 @@ public class EnumGenerator extends SpecialFileGenerator {
 
 	@Override
 	public boolean isGeneratable(Class<?> javaClass) {
-		return javaClass.isEnum() && WebSingleFileGenerator.getPreGeneratedSource(javaClass).isPresent();
+		return JavaIdentifierUtils.hasSuperclassOrImplementsInterface(javaClass, Enum.class.getName()) &&
+				JavaFileWithSource.fromClasspathOnly(javaClass).isPresent();
 	}
 }
