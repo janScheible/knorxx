@@ -29,27 +29,20 @@ public class CssDefinitionFileGenerator extends SpecialFileGenerator {
 				"." + javaClass.getAnnotation(StyleScopeClass.class).value() + " " : "";
         for(Field field : javaClass.getDeclaredFields()) {
             if(field.getType().equals(String.class)) {
-				String fieldValue;
+				String value;
 				try {
-					fieldValue = (String) field.get(null);
+					value = (String) field.get(null);
 				} catch (IllegalArgumentException | IllegalAccessException ex) {
 					throw new SingleFileGeneratorException(ex, null);
 				}
 				
 				if(field.getAnnotation(NoRule.class) == null) {
 					String styleName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, field.getName());
-					cssDefinitions.put(styleScope + "." + styleName, "{" + fieldValue + "}");
-			
-					builder
-						.staticFunction(javaClass, field.getName())
-							.code("return ").literal(styleName).semicolon().newLine()
-						._function();
-				} else {					
-					builder
-						.staticFunction(javaClass, field.getName())
-							.code("return ").literal(fieldValue).semicolon().newLine()
-						._function();					
-				}
+					cssDefinitions.put(styleScope + "." + styleName, "{" + value + "}");
+					value = styleName;
+				} 
+				
+				builder.staticVariable(javaClass, field.getName()).literal(value).semicolon().newLine();
             }
         }
                 

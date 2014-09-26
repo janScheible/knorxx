@@ -118,6 +118,14 @@ public abstract class AbstractJavaScriptBuilder<T extends AbstractJavaScriptBuil
         indentation++;
         return self();
     }
+	
+	public T staticVariable(Class javaClass, String variableName) {	
+		source.append(javaClass.getName());
+        source.append(".");
+        source.append(variableName);		
+		source.append(" = ");
+		return self();
+	}
 
     public T anonymousFunction(String... argumentNames) {
         source.append("function(");
