@@ -23,7 +23,9 @@ public class KnorxxPlugin<JS> implements STJSGenerationPlugin<JS> {
 
     @Override
     public void contributeWriteVisitor(WriterVisitor<JS> visitor) {
-        visitor.contribute(template("propertyAccess"), new PropertyAccessTemplate());
+		visitor.contribute(new TypedNewClassWriter<JS>());
+		
+        visitor.contribute(template("propertyAccess"), new PropertyAccessTemplate());		
     }
     
     private DiscriminatorKey template(String name) {
