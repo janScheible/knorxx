@@ -4,7 +4,7 @@
   
     <groupId>knorxx.framework.generator</groupId>
     <artifactId>javaee-adapter</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0-SNAPSHOT</version>
   
     <name>knorxx.framework.generator:javaee-adapter</name>
     <packaging>jar</packaging>
@@ -12,7 +12,7 @@
     <parent>
         <groupId>knorxx</groupId>
         <artifactId>framework</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0-SNAPSHOT</version>
         <relativePath>../framework</relativePath>
     </parent>
     
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>knorxx.framework</groupId>
             <artifactId>generator</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>        
     </dependencies>
 </project>
