@@ -4,7 +4,7 @@
   
     <groupId>knorxx.framework.generator</groupId>
     <artifactId>javaee-sample-app</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
   
     <name>knorxx.framework.generator:javaee-sample-app</name>
     <packaging>war</packaging>
@@ -62,12 +62,12 @@
         <dependency>
             <groupId>knorxx.framework.generator</groupId>
             <artifactId>javaee-adapter</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>knorxx.framework.generator</groupId>
             <artifactId>jquery-ui-bridge</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>        
         
         <dependency>
