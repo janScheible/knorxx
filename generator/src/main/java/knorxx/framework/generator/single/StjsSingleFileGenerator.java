@@ -171,6 +171,7 @@ public class StjsSingleFileGenerator extends SingleFileGenerator {
     @Override
     public boolean isGeneratable(Class<?> javaClass) {
         return super.isGeneratable(javaClass) && 
+				!javaClass.isAnnotation() && 
                 javaClass.getAnnotation(STJSBridge.class) == null &&
                 javaClass.getAnnotation(SyntheticType.class) == null &&
                 !javaClass.getPackage().getName().startsWith(Window.class.getPackage().getName());

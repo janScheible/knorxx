@@ -134,7 +134,7 @@ public class JavaScriptGenerator {
 
         dependencies = removeJavaCoreClassNames(dependencies);
 		logger.debug("Dependencies after removal of Java core classes: {}", Joiner.on(", ").join(dependencies));
-        dependencies = singleFileGenerator.removeNotGeneratableJavaClasses(dependencies, classLoader);
+        dependencies = singleFileGenerator.removeNotGeneratableJavaClasses(javaClass, dependencies, classLoader);
 		logger.debug("Dependencies after removal of not generatable Java classes (by {}): {}", 
 				singleFileGenerator.getClass().getSimpleName(), Joiner.on(", ").join(dependencies));
         

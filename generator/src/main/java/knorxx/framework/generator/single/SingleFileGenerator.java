@@ -20,7 +20,7 @@ public abstract class SingleFileGenerator {
         return javaClass.getAnnotation(NotJavaScriptGeneratable.class) == null;
     }
     
-    public Set<String> removeNotGeneratableJavaClasses(Set<String> javaClassNames, final ClassLoader classLoader) {
+    public Set<String> removeNotGeneratableJavaClasses(Class javaClass, Set<String> javaClassNames, final ClassLoader classLoader) {
         return new HashSet<>(Sets.filter(javaClassNames, new Predicate<String>() {
             @Override
             public boolean apply(String javaClassName) {

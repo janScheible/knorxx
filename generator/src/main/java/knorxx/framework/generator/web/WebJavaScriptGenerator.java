@@ -22,6 +22,7 @@ import knorxx.framework.generator.reloading.MethodAnnotationDescription;
 import knorxx.framework.generator.reloading.ReloadPredicate;
 import knorxx.framework.generator.reloading.ReloadingClassLoader;
 import knorxx.framework.generator.single.StjsSingleFileGenerator;
+import knorxx.framework.generator.util.JavaIdentifierUtils;
 import static knorxx.framework.generator.util.JavaIdentifierUtils.hasSuperclassOrImplementsInterface;
 import knorxx.framework.generator.web.client.WebPage;
 import knorxx.framework.generator.web.client.messagequeue.annotation.QueueMessage;
@@ -62,7 +63,7 @@ public class WebJavaScriptGenerator {
         this.classLoader = createClassLoader();
         this.webSingleFileGenerator = new WebSingleFileGenerator(new StjsSingleFileGenerator(), allowedGenerationPackage,
                 new CssDefinitionFileGenerator(), new MessageQueueFileGenerator(), 
-                new RpcServiceFileGenerator(csrfProtectionCookiePath, rpcUrl), new EnumGenerator());
+                new RpcServiceFileGenerator(csrfProtectionCookiePath, rpcUrl));
     }
 
     private boolean isDataTransferObject(Class<?> javaClass) {
