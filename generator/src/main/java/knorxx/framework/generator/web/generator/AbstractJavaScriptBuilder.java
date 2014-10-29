@@ -2,6 +2,7 @@ package knorxx.framework.generator.web.generator;
 
 import com.google.common.base.Joiner;
 import java.lang.reflect.Method;
+import org.apache.commons.lang3.ClassUtils;
 
 /**
  *
@@ -152,6 +153,26 @@ public abstract class AbstractJavaScriptBuilder<T extends AbstractJavaScriptBuil
         source.append(Boolean.toString(value));
         return self();
     }
+	
+    public T literal(int value) {
+        source.append(Integer.toString(value));
+        return self();
+    }	
+	
+    public T literal(Object value) {
+		Class valueClass = value.getClass().equals(String.class) || ClassUtils.isPrimitiveWrapper(value.getClass()) ?
+				value.getClass() : ClassUtils.primitiveToWrapper(value.getClass());
+		
+		if(Integer.class.equals(valueClass)) {
+			return literal((int)value);
+		} else if(Boolean.class.equals(valueClass)) {
+			return literal((boolean)value);
+		} else if(String.class.equals(valueClass)) {
+			return literal((String)value);
+		} else {
+			throw new IllegalStateException("The type '" + value.getClass().getName() + "' is not a supported literal type!");
+		}
+    }		
 
     public T literal(String value) {
         source.append("'");
