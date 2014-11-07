@@ -1,6 +1,7 @@
 # Knorxx Framework
 
 ## News
+ - 07.11.2014: [This blog article can be used for giving feedback about the Knorxx Framework](http://web-development-blog.de/knorxx-framework/)
  - 05.11.2014: [Article about the Knorxx Framework in the Java Magazin 12.14](https://jaxenter.de/Java-Magazin/Java-Magazin-1214-177040) (in German)
  - 01.11.2014: [Knorxx application skeleton for getting started easily](https://github.com/janScheible/knorxx-getting-started)
  - 29.10.2014: Knorxx Framework 1.0.0 is released
