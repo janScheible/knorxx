@@ -37,6 +37,8 @@ As mentioned above the Spring adapter is the most mature adapter till now. There
 
 **Note:** Since st-js 3 Knorxx needs a modified version of st-js. Therfore you have to download and build the 'stjs-3.0.1-knorxx' branch of the 'janScheible/st-js' fork first.
 
+**Note:** At runtime st-js needs tools.jar of the JDK. The easiest way to make it available is to copy tools.jar from ```$JDK_HOME/lib/tools.jar``` to ```$JDK_HOME/jre/lib/ext```.
+
 To see the reload feature in action edit for example ```SimpleWebPage``` by adding a call to a newly created helper class. Then go back to your browser and reload the page. You will immediately see the changes. More information about how to write the Java code which can be translated to JavaScript see [Writing ST-JS code].
 
 [Writing ST-JS code]: http://st-js.github.io/reference.html#writing
