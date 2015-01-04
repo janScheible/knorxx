@@ -5,6 +5,7 @@ import com.google.common.base.Optional;
 import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import knorxx.framework.generator.dependency.ByteCodeDependencyCollector;
@@ -120,7 +121,7 @@ public class JavaScriptGenerator {
 
         unit.addVisitedClass(javaFile.getJavaClassName());
         unit.removeMissingDependencies(javaFile.getJavaClassName());
-        Set<String> dependencies = dependencyCollector.collect(javaFile, classLoader);
+        Set<String> dependencies = getAllDependencies(javaFile, dependencyCollector, classLoader, singleFileGenerator, generationRoots);
 		logger.debug("Dependencies: {}", Joiner.on(", ").join(dependencies));
         
         unit.getLibraryUrls().addAll(libraryDetector.detect(dependencies));
@@ -143,6 +144,34 @@ public class JavaScriptGenerator {
 
         return unit;
     }
+	
+	/**
+	 * Collects the dependencies of the javaFile and all of its super classes (if generatable).
+	 */
+	private Set<String> getAllDependencies(JavaFileWithSource<?> javaFile, DependencyCollector dependencyCollector, ClassLoader classLoader, SingleFileGenerator singleFileGenerator, GenerationRoots generationRoots) {
+		Set<String> dependencies = new HashSet<>();
+
+		Class currentJavaClass = javaFile.getJavaClass();
+		while (currentJavaClass != null) {
+			dependencies.addAll(dependencyCollector.collect(javaFile, classLoader));
+
+			currentJavaClass = currentJavaClass.getSuperclass();
+			if (currentJavaClass != null) {
+				// NOTE The check if the super class is generatable feels a bit hacky... but it works. ;-)
+				Set<String> superClassGeneratableTest = Sets.newHashSet(currentJavaClass.getName());
+				superClassGeneratableTest = removeJavaCoreClassNames(superClassGeneratableTest);
+				superClassGeneratableTest = singleFileGenerator.removeNotGeneratableJavaClasses(currentJavaClass, superClassGeneratableTest, classLoader);
+
+				if (superClassGeneratableTest.isEmpty()) {
+					currentJavaClass = null;
+				} else {
+					javaFile = new JavaFileWithSource<>(currentJavaClass, generationRoots);
+				}
+			}
+		}
+
+		return dependencies;
+	}
 
     private Optional<? extends ClassLoader> getClassLoader(Optional<? extends ClassLoader> classLoader) {
         if (classLoader.isPresent()) {
