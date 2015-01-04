@@ -18,4 +18,9 @@ public class Pojo {
     @Template("propertyAccess")
     public void setValue(int value) {        
     }
+	
+    @Template("propertyAccess")
+    public boolean isValid() {
+		throw new UnsupportedOperationException();
+    }	
 }

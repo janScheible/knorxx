@@ -15,7 +15,12 @@ public class PropertyAccessTemplateTest {
     }
     
     @Test
+    public void testPropertyIs() {
+        assertCodeContains(PropertyAccessIs.class, "=pojo.valid");
+    }	
+	
+    @Test
     public void testPropertySet() {
         assertCodeContains(PropertyAccessSet.class, "pojo.value=");
-    }
+    }	
 }

@@ -35,7 +35,10 @@ public class PropertyAccessTemplate<JS> implements WriterContributor<MethodInvoc
         } else if (name.startsWith("get") || name.startsWith("set")) {
             start = 3;
             firstToLower = true;
-        }
+        } else if (name.startsWith("is")) {
+			start = 2;
+			firstToLower = true;
+		}
   
         JS target = MethodInvocationWriter.buildTarget(visitor, context.<MethodInvocationTree>getCurrentWrapper());
 		JS property = context.js().property(target, formatName(name, start, firstToLower));
