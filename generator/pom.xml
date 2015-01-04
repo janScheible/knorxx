@@ -25,7 +25,7 @@
             <id>rendersnakeRepository</id>
             <url>http://rendersnake.googlecode.com/svn/repo</url>
         </repository>
-    </repositories>
+	</repositories>
     
     <build>
         <resources>
@@ -150,6 +150,12 @@
             <artifactId>jquery</artifactId>
             <version>1.9.1</version>
         </dependency>     
+		
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>0.9.9</version>
+		</dependency>		
         
         <dependency>
             <groupId>org.jpatterns</groupId>

@@ -9,30 +9,26 @@ import com.google.common.io.CharStreams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import knorxx.framework.generator.GenerationResult;
 import knorxx.framework.generator.GenerationRoots;
 import knorxx.framework.generator.GenerationUnit;
+import knorxx.framework.generator.application.KnorxxApplicationGenerator;
+import knorxx.framework.generator.application.PopulatableCache;
 import knorxx.framework.generator.library.LibraryDetector;
 import knorxx.framework.generator.library.LibraryUrls;
-import knorxx.framework.generator.reloading.annotation.Reloadable;
 import knorxx.framework.generator.single.JavaScriptResult;
 import static knorxx.framework.generator.springadapter.CacheRequestType.*;
 import static knorxx.framework.generator.springadapter.KnorxxGeneratorCacheConfig.GENERATOR_CACHE_NAME;
 import knorxx.framework.generator.web.KnorxxApplication;
-import knorxx.framework.generator.web.WebJavaScriptGenerator;
 import knorxx.framework.generator.web.client.ErrorHandler;
 import knorxx.framework.generator.web.client.RpcService;
 import knorxx.framework.generator.web.client.WebPage;
 import knorxx.framework.generator.web.client.webpage.PageArranger;
-import knorxx.framework.generator.web.client.webpage.annotation.WebPageArranger;
 import knorxx.framework.generator.web.generator.CssResult;
 import knorxx.framework.generator.web.server.json.JsonHelper;
 import knorxx.framework.generator.web.server.rpc.ExceptionMarshaller;
@@ -40,11 +36,7 @@ import knorxx.framework.generator.web.server.rpc.RpcCall;
 import knorxx.framework.generator.web.server.rpc.RpcCaller;
 import knorxx.framework.generator.web.server.rpc.RpcResult;
 import knorxx.framework.generator.web.server.rtti.RttiGenerationResult;
-import knorxx.framework.generator.web.server.rtti.RttiGenerator;
 import knorxx.framework.generator.web.server.rtti.UrlResolver;
-import org.joda.time.DateTime;
-import org.rendersnake.HtmlCanvas;
-import org.rendersnake.Renderable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
@@ -60,7 +52,7 @@ import org.springframework.web.servlet.ModelAndView;
  *
  * @author sj
  */
-public abstract class KnorxxController implements ApplicationContextAware {
+public abstract class KnorxxController implements ApplicationContextAware, PopulatableCache {
     
     public final static String FRAMEWORK_URL_PREFIX = "knorxx";
     private final static String JSON_RPC_URL = "/" + FRAMEWORK_URL_PREFIX + "/rpc";
@@ -69,7 +61,6 @@ public abstract class KnorxxController implements ApplicationContextAware {
     private final Class<?> javaScriptGenerationRoot;    
     private final Class<?> indexWebPageClass;
     private final Function<HttpServletRequest, GenerationRoots> generationRootsFunction;
-    private GenerationRoots generationRoots;
     private final LibraryDetector libraryDetector;
     private final ExceptionMarshaller exceptionMarshaller;
     
@@ -99,6 +90,8 @@ public abstract class KnorxxController implements ApplicationContextAware {
     @Autowired
     ErrorHandler javaScriptErrorHandler;
 
+	KnorxxApplicationGenerator applicationGenerator;
+	
     public KnorxxController(Class<?> applicationRootClass, Class<?> javaScriptGenerationRoot, Class<?> indexWebPageClass, 
             Function<HttpServletRequest, GenerationRoots> generationRootsFunction,
             LibraryDetector libraryDetector, ExceptionMarshaller exceptionMarshaller) {
@@ -111,6 +104,18 @@ public abstract class KnorxxController implements ApplicationContextAware {
         
         this.urlResolver = new UrlResolver(FRAMEWORK_URL_PREFIX, javaScriptGenerationRoot.getPackage().getName());
     }
+	
+	@PostConstruct
+	private void init() {
+		List<Class<?>> webPagesClasses = new ArrayList<>();
+		for(WebPage webPage : webPages) {
+			webPagesClasses.add(webPage.getClass());
+		}
+		
+		applicationGenerator = new KnorxxApplicationGenerator(knorxxApplication, 
+				applicationRootClass.getPackage().getName(), javaScriptGenerationRoot.getPackage().getName(), webPagesClasses, 
+				libraryDetector, urlResolver, jsonHelper, javaScriptJsonHelper, javaScriptErrorHandler, JSON_RPC_URL);
+	}
     
     @RequestMapping(value = "/")
     public String index() {
@@ -120,18 +125,18 @@ public abstract class KnorxxController implements ApplicationContextAware {
     @RequestMapping(value = "/" + FRAMEWORK_URL_PREFIX + "/**/*.html")
     public ModelAndView webPage(HttpServletRequest request) throws IOException {
         Class<?> webPageClass = null;
-        List<Class<?>> webPageClasses = new ArrayList<>();
+
         for(WebPage webPage : webPages) {
-            webPageClasses.add(webPage.getClass());
-            
             if(urlResolver.resolveWebPage(webPage.getClass().getName()).equals(getUrl(request))) {
                 webPageClass = webPage.getClass();
             }            
         }
         
         if(webPageClass != null) {
-            return generateWebPage(request, webPageClass, javaScriptGenerationRoot.getPackage().getName(), 
-                    urlResolver, webPageClasses);
+            return new ModelAndView("/presentation.jsp", applicationGenerator.generateWebPage(
+					generationRootsFunction.apply(request), webPageClass, 
+					Optional.of(applicationContext.getBeansOfType(PageArranger.class).values()),
+					request.getContextPath(), this));
         } else {
             return null;        
         }
@@ -151,96 +156,8 @@ public abstract class KnorxxController implements ApplicationContextAware {
         RpcResult rpcResult = rpcCaller.call(rpcCall, exceptionMarshaller, jsonHelper, new ArrayList<>(rpcServices), request);
         return jsonHelper.toJson(rpcResult);
     }
-    
-    private ModelAndView generateWebPage(HttpServletRequest request, Class<?> webPageClass, 
-            String allowedGenerationPackage, UrlResolver urlResolver, List<Class<?>> webPageClasses) throws IOException {
-        Map<String, Object> model = new HashMap<>();
-        model.put("applicationName", knorxxApplication.getName());
-        
-        model.put("mainClassName", webPageClass.getName());
-        
-        model.put("errorHandlerClassName", javaScriptErrorHandler.getClass().getName());        
-        model.put("jsonHelperClassName", javaScriptJsonHelper.getClass().getName());
-        
-        String allowedReloadPackage = applicationRootClass.getPackage().getName();
-        
-        WebJavaScriptGenerator generator = new WebJavaScriptGenerator(getGenerationRoots(request),
-                allowedGenerationPackage, allowedReloadPackage, request.getContextPath() + "/",
-                JSON_RPC_URL.substring(1), libraryDetector);
-        GenerationUnit unit = generator.generateAll(Lists.<Class<?>>newArrayList(webPageClass,
-                javaScriptJsonHelper.getClass(), javaScriptErrorHandler.getClass()));
-        
-        model.put("libraryCssUrls", unit.getLibraryUrls().getCssUrls());
-        model.put("libraryJavaScriptUrls", unit.getLibraryUrls().getJavaScriptUrls());
-        
-        RttiGenerator rttiGenerator = new RttiGenerator();
-        RttiGenerationResult rttiGenerationResult = rttiGenerator.getJavaScriptSource(
-                WebPage.class.getPackage().getName() + ".RunTimeTypeInformation",
-                webPageClasses, urlResolver, new DateTime());
-        
-        LibraryUrls cacheUrls = populateCache(unit, rttiGenerationResult, urlResolver);
-        model.put("cssUrls", cacheUrls.getCssUrls());
-        model.put("javaScriptUrls", cacheUrls.getJavaScriptUrls());
-		
-        model.put("webPageModelJson", "{}");
-        for(PageArranger pageArranger : applicationContext.getBeansOfType(PageArranger.class).values()) {
-            if(webPageClass.getAnnotation(WebPageArranger.class) != null &&
-                    webPageClass.getAnnotation(WebPageArranger.class).value().getName().equals(pageArranger.getClass().getName())) {
-                Map<String, Object> webPageModel = new HashMap<>();
-                pageArranger.initialize(webPageModel);
-                model.put("webPageModelJson", jsonHelper.toJson(webPageModel));
-                
-                HtmlCanvas htmlCanvas = new HtmlCanvas();
-                renderPageArranger(request, pageArranger, htmlCanvas, generator.getClassLoader());
-                model.put("preRenderedHtml", htmlCanvas.toHtml());
 
-                break;
-            }
-        }
-        
-        return new ModelAndView("/presentation.jsp", model);
-    }
-    
-    private void renderPageArranger(HttpServletRequest request, Renderable pageArranger, HtmlCanvas htmlCanvas, ClassLoader classLoader) throws IOException {
-        Method renderOnMethod = null;
-        
-        try {
-            renderOnMethod = pageArranger.getClass().getMethod("renderOn", HtmlCanvas.class);
-        } catch (NoSuchMethodException | SecurityException ex) {
-            throw new IllegalStateException("Can't find the method renderOn(HtmlCanvas) of a PageArranger. "
-                    + "This might be cause by an API change!");
-        }
-
-        boolean reloadableRenderOn = renderOnMethod.getAnnotation(Reloadable.class) != null;
-        if (reloadableRenderOn) {
-            try {
-                final Object pageArrangerInstance = classLoader.loadClass(pageArranger.getClass().getName()).newInstance();
-                pageArranger = new Renderable() {
-                    @Override
-                    public void renderOn(HtmlCanvas html) throws IOException {
-                        try {
-                            Method renderOnMethod = pageArrangerInstance.getClass().getMethod("renderOn", HtmlCanvas.class);
-                            renderOnMethod.invoke(pageArrangerInstance, html);
-                        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                            throw new IllegalStateException("Can't call renderOn(HtmlCanvas) on the reloaded PageArranger instance!", ex);
-                        }
-                    }
-                };
-            } catch( SecurityException | InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-                throw new IllegalStateException("Can't instantiate a PageArranger with a renderOn(HtmlCanvas) "
-                        + "method marked with @Reloadable! Does it have a default constructor?");
-            }        
-        }
-
-        pageArranger.renderOn(htmlCanvas);
-    }
-    
-    private GenerationRoots getGenerationRoots(HttpServletRequest request) {
-        generationRoots = generationRoots != null ? generationRoots : generationRootsFunction.apply(request);
-        return generationRoots;
-    }
-
-    private LibraryUrls populateCache(GenerationUnit unit, RttiGenerationResult rttiGenerationResult, UrlResolver urlResolver) {
+    public LibraryUrls populate(GenerationUnit unit, RttiGenerationResult rttiGenerationResult, UrlResolver urlResolver) {
         LibraryUrls cacheUrls = new LibraryUrls();
         Cache generatorCache = cacheManager.getCache(GENERATOR_CACHE_NAME);
         
