@@ -4,7 +4,7 @@
   
     <groupId>knorxx.framework.generator</groupId>
     <artifactId>javaee-sample-app</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1.0</version>
   
     <name>knorxx.framework.generator:javaee-sample-app</name>
     <packaging>war</packaging>
@@ -12,7 +12,14 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.7</java.version>
-    </properties>        
+    </properties>	
+	
+	<repositories>
+		<repository>
+			<id>knorxxFramework</id>
+			<url>https://raw.githubusercontent.com/janScheible/maven-repository/master/</url>
+		</repository>
+    </repositories>
     
     <build>
         <plugins>
@@ -62,12 +69,12 @@
         <dependency>
             <groupId>knorxx.framework.generator</groupId>
             <artifactId>javaee-adapter</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>1.1.0</version>
         </dependency>
         <dependency>
             <groupId>knorxx.framework.generator</groupId>
             <artifactId>jquery-ui-bridge</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>1.1.0</version>
         </dependency>        
         
         <dependency>
