@@ -88,7 +88,7 @@ public abstract class KnorxxScriptExporter {
 		return result;
 	}
 	
-	protected String print(GenerationRoots generationRoots, Class<?> webPageClass) {
+	protected ExportResult export(GenerationRoots generationRoots, Class<?> webPageClass) {
 		final AtomicReference<GenerationUnit> generationUnitRef = new AtomicReference<>();
 		final AtomicReference<RttiGenerationResult> rttiGenerationResultRef = new AtomicReference<>();
 		final AtomicReference<UrlResolver> urlResolverRef = new AtomicReference<>();
@@ -105,10 +105,9 @@ public abstract class KnorxxScriptExporter {
 		};
 		
 		try {
-			applicationGenerator.generateWebPage(generationRoots, webPageClass, 
-					Optional.<Collection<PageArranger>>absent(), "/context", populatableCache);
-			
-			return "";
+			return new ExportResult(applicationGenerator.generateWebPage(generationRoots, webPageClass, 
+					Optional.<Collection<PageArranger>>absent(), "/context", populatableCache), generationUnitRef.get(),
+					rttiGenerationResultRef.get(), urlResolverRef.get());
 		} catch (IOException ex) {
 			throw new IllegalStateException(ex);
 		}
