@@ -11,16 +11,17 @@
         <title>${applicationName}</title>        
         <c:set var="req" value="${pageContext.request}" /><c:set var="baseURL" value="${req.scheme}://${req.serverName}:${req.serverPort}${req.contextPath}" />
         <base href="${baseURL}/"/>
-        
-        <script type="text/javascript" src="webjars/jquery/1.9.1/jquery.js"></script>
 
         <c:forEach items="${libraryCssUrls}" var="libraryCssUrl"><link rel="stylesheet" type="text/css" href="${libraryCssUrl}"><%="\n        "%></c:forEach>
+		<c:forEach items="${cssUrls}" var="cssUrl"><link rel="stylesheet" type="text/css" href="${cssUrl}"><%="\n        "%></c:forEach>
+		
+		<script type="text/javascript" src="webjars/jquery/1.9.1/jquery.js"></script>
+		
         <c:forEach items="${libraryJavaScriptUrls}" var="libraryJavaScriptUrl"><script type="text/javascript" src="${libraryJavaScriptUrl}"></script><%="\n        "%></c:forEach>        
         
         <script type="text/javascript" src="jquery/jquery.atmosphere-min.js"></script>        
         <script type="text/javascript" src="resources/js/stjs.js"></script>
         
-        <c:forEach items="${cssUrls}" var="cssUrl"><link rel="stylesheet" type="text/css" href="${cssUrl}"><%="\n        "%></c:forEach>
         <c:forEach items="${javaScriptUrls}" var="javaScriptUrl"><script type="text/javascript" src="${javaScriptUrl}"></script><%="\n        "%></c:forEach>
         
         <script type="text/javascript">
