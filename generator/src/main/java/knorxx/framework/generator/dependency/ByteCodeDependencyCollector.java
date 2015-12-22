@@ -101,7 +101,7 @@ public class ByteCodeDependencyCollector extends DependencyCollector {
                 if(isInnerClass(innerClass)) {
                     if(!currentJavaFile.getJavaClassName().equals(innerClass) && 
                             innerClass.startsWith(rootJavaFile.getJavaClassName()) &&
-                            getJavaClassNestingLevel(innerClass) > currentNestingLevel) {
+                            getJavaClassNestingLevel(innerClass) == currentNestingLevel + 1) {
                         result.addAll(collectInternal(rootJavaFile, currentJavaFile.getInnerClass(innerClass.substring(innerClass.lastIndexOf("$") + 1) , classLoader), classLoader));
                     }
                 }
