@@ -1,6 +1,7 @@
 # Knorxx Framework
 
 ## News
+ - 22.12.2015: [Knorxx Framework 1.1.1 is released](https://github.com/janScheible/knorxx/releases/tag/v1.1.1)
  - 04.01.2015: [Knorxx Framework 1.1.0 is released](https://github.com/janScheible/knorxx/releases/tag/v1.1.0)
  - 07.11.2014: [This blog article can be used for giving feedback about the Knorxx Framework](http://web-development-blog.de/knorxx-framework/)
  - 05.11.2014: [Article about the Knorxx Framework in the Java Magazin 12.14](https://jaxenter.de/Java-Magazin/Java-Magazin-1214-177040) (in German)
